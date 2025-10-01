@@ -6,7 +6,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import {
   Form,
   FormControl,
@@ -16,7 +15,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { signUpSchema, type SignUpFormData } from "../lib/validations";
-import { createClient } from "@/utils/supabase/client";
+import { signUp } from "../actions/auth";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -33,7 +32,7 @@ export function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormProps) {
   const form = useForm<SignUpFormData>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
-      fullName: "",
+      name: "",
       email: "",
       username: "",
       password: "",
@@ -45,55 +44,15 @@ export function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormProps) {
   const onSubmit = async (data: SignUpFormData) => {
     setIsLoading(true);
     try {
-      const supabase = createClient();
-      
-      // Check if username is already taken
-      const { data: existingUser } = await supabase
-        .from("profiles")
-        .select("username")
-        .eq("username", data.username)
-        .single();
-
-      if (existingUser) {
-        throw new Error("Username is already taken");
-      }
-
-      // Sign up with Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: data.email,
-        password: data.password,
-        options: {
-          emailRedirectTo: undefined, // Skip email confirmation
-          data: {
-            full_name: data.fullName,
-            username: data.username,
-          },
-        },
+      // Sign up the user (username check is now handled in the server action)
+      const result = await signUp(data.email, data.password, {
+        name: data.name,
+        username: data.username,
       });
 
-      if (authError) {
-        throw new Error(authError.message);
-      }
-
-      if (authData.user) {
-        // Create profile immediately (no verification required)
-        console.log("User created successfully:", authData.user.id);
-        
-        const { error: profileError } = await supabase
-          .from("profiles")
-          .insert({
-            id: authData.user.id,
-            full_name: data.fullName,
-            username: data.username,
-            email: data.email,
-          });
-
-        if (profileError) {
-          console.error("Profile creation error:", profileError);
-          // Don't show error to user, profile creation is not critical
-        }
-
-        toast.success("Account created successfully! Welcome to PortFilo!");
+      if (result.success) {
+        toast.success("Account created! Please check your email to verify your account before signing in.");
+        // Stay on landing page and switch to sign in tab
         onSuccess();
       }
     } catch (error) {
@@ -109,7 +68,7 @@ export function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormProps) {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 h-full flex flex-col">
         <FormField
           control={form.control}
-          name="fullName"
+          name="name"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Name</FormLabel>

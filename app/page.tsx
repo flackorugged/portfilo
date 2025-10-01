@@ -2,26 +2,27 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
 import { SplashPage } from "@/components/splash-page";
-import { AuthModal } from "./auth/components/AuthModal";
+import { SignInForm } from "./auth/components/SignInForm";
+import { SignUpForm } from "./auth/components/SignUpForm";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function Home() {
   const [showSplash, setShowSplash] = useState(true);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [authModalTab, setAuthModalTab] = useState<"signin" | "signup">("signin");
+  const [activeTab, setActiveTab] = useState<"signin" | "signup">("signin");
 
   const handleSplashComplete = () => {
     setShowSplash(false);
   };
 
-  const handleAuthModalClose = () => {
-    setShowAuthModal(false);
-  };
-
-  const openAuthModal = (tab: "signin" | "signup") => {
-    setAuthModalTab(tab);
-    setShowAuthModal(true);
+  const handleAuthSuccess = () => {
+    // For signup, switch to sign-in tab
+    // For signin, the middleware will handle the redirect to /home
+    if (activeTab === "signup") {
+      setActiveTab("signin");
+    } else {
+      window.location.href = "/home";
+    }
   };
 
   if (showSplash) {
@@ -30,61 +31,66 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-black text-white select-none">
-      <div className="flex flex-col md:flex-row h-screen">
-        {/* Logo */}
-        <div className="flex-1 flex items-start md:items-center mb-8 justify-start md:justify-end pt-4 pl-4 md:pt-0 md:pr-20">
-          <Image
-            src="/portfilogo.svg"
-            alt="PortFilo Logo"
-            width={300}
-            height={300}
-            className="w-[100px] h-[100px] md:w-auto md:h-auto"
-            priority
-          />
-        </div>
+      {/* Mobile Layout */}
+      <div className="block md:hidden">
+        <div className="flex flex-col min-h-screen px-4 py-6">
+          {/* Logo - Mobile */}
+          <div className="flex justify-center mb-8">
+            <Image
+              src="/portfilogo.svg"
+              alt="PortFilo Logo"
+              width={120}
+              height={120}
+              className="w-24 h-24"
+              priority
+            />
+          </div>
 
-        {/* Content */}
-        <div className="flex-1 pl-10 flex items-center justify-start pl-4 pr-4 md:pl-6 md:pr-0">
-          <div className="w-full max-w-sm">
-            {/* Headline */}
-              <div className="mb-8">
-                <h1 className="text-4xl md:text-6xl font-bold mb-8 md:mb-14">
-                  For the Filos
-                </h1>
-                <p className="text-xl md:text-3xl font-bold text-white/80">
-                  See what's up.
-                </p>
-              </div>
+          {/* Headline - Mobile */}
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold mb-4">
+              For the Filos
+            </h1>
+            <p className="text-lg font-bold text-white/80">
+              See what&apos;s up.
+            </p>
+          </div>
 
-            {/* Sign-up Buttons */}
-            <div className="space-y-2 md:space-y-3 mb-4 md:mb-6">
-              <Button 
-                className="w-full h-10 md:h-12 text-sm md:text-base font-semibold bg-white text-black hover:bg-white/80 border border-gray-300"
-                variant="default"
-              >
-                Sign up with Google
-              </Button>
+          {/* Auth Forms - Mobile */}
+          <div className="flex-1 flex flex-col justify-center">
+            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "signin" | "signup")} className="w-full max-w-sm mx-auto">
+              <TabsList className="grid w-full grid-cols-2 bg-gray-900 border-gray-700 mb-6">
+                <TabsTrigger 
+                  value="signin" 
+                  className="data-[state=active]:bg-primary data-[state=active]:text-black text-gray-400 text-sm"
+                >
+                  Sign In
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="signup"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-black text-gray-400 text-sm"
+                >
+                  Sign Up
+                </TabsTrigger>
+              </TabsList>
               
-              <div className="relative my-3 md:my-4">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-600" />
-                </div>
-                <div className="relative flex justify-center text-xs md:text-sm">
-                  <span className="px-2 bg-black text-gray-400">OR</span>
-                </div>
-              </div>
+              <TabsContent value="signin" className="mt-0">
+                <SignInForm 
+                  onSuccess={handleAuthSuccess}
+                  onSwitchToSignUp={() => setActiveTab("signup")}
+                />
+              </TabsContent>
               
-              <Button 
-                className="w-full h-10 md:h-12 text-sm md:text-base font-semibold bg-primary hover:bg-primary/80 text-black font-bold"
-                variant="default"
-                onClick={() => openAuthModal("signup")}
-              >
-                Create account
-              </Button>
-            </div>
+              <TabsContent value="signup" className="mt-0">
+                <SignUpForm 
+                  onSuccess={handleAuthSuccess}
+                  onSwitchToSignIn={() => setActiveTab("signin")}
+                />
+              </TabsContent>
+            </Tabs>
 
-            {/* Legal Text */}
-            <p className="text-xs text-gray-400 mb-6 md:mb-8">
+            {/* Legal Text - Mobile */}
+            <p className="text-xs text-gray-400 mt-6 text-center px-4">
               By signing up, you agree to the{" "}
               <span className="text-primary hover:underline cursor-pointer">Terms of Service</span>
               {" "}and{" "}
@@ -92,25 +98,81 @@ export default function Home() {
               , including{" "}
               <span className="text-primary hover:underline cursor-pointer">Cookie Use</span>.
             </p>
-
-            {/* Sign in section */}
-            <div className="pb-10">
-              <p className="text-white mb-3 md:mb-4 font-bold text-white/80 text-sm md:text-base">
-                Already have an account?
-              </p>
-              <Button 
-                className="w-full h-10 md:h-12 text-sm md:text-base border border-gray-600 text-white hover:bg-white/10"
-                variant="outline"
-                onClick={() => openAuthModal("signin")}
-              >
-                Sign in
-              </Button>
-            </div>
           </div>
         </div>
       </div>
-      
-      <AuthModal isOpen={showAuthModal} onClose={handleAuthModalClose} initialTab={authModalTab} />
+
+      {/* Desktop Layout */}
+      <div className="hidden md:flex md:flex-row min-h-screen">
+        {/* Logo - Desktop */}
+        <div className="flex-1 flex items-center justify-end pr-20">
+          <Image
+            src="/portfilogo.svg"
+            alt="PortFilo Logo"
+            width={300}
+            height={300}
+            className="w-auto h-auto"
+            priority
+          />
+        </div>
+
+        {/* Content - Desktop */}
+        <div className="flex-1 flex items-center justify-start pl-6">
+          <div className="w-full max-w-sm">
+            {/* Headline - Desktop */}
+            <div className="mb-8">
+              <h1 className="text-6xl font-bold mb-14">
+                For the Filos
+              </h1>
+              <p className="text-3xl font-bold text-white/80">
+                See what&apos;s up.
+              </p>
+            </div>
+
+            {/* Auth Forms - Desktop */}
+            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "signin" | "signup")} className="w-full">
+              <TabsList className="grid w-full grid-cols-2 bg-gray-900 border-gray-700">
+                <TabsTrigger 
+                  value="signin" 
+                  className="data-[state=active]:bg-primary data-[state=active]:text-black text-gray-400"
+                >
+                  Sign In
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="signup"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-black text-gray-400"
+                >
+                  Sign Up
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="signin" className="mt-6">
+                <SignInForm 
+                  onSuccess={handleAuthSuccess}
+                  onSwitchToSignUp={() => setActiveTab("signup")}
+                />
+              </TabsContent>
+              
+              <TabsContent value="signup" className="mt-6">
+                <SignUpForm 
+                  onSuccess={handleAuthSuccess}
+                  onSwitchToSignIn={() => setActiveTab("signin")}
+                />
+              </TabsContent>
+            </Tabs>
+
+            {/* Legal Text - Desktop */}
+            <p className="text-xs text-gray-400 mt-6">
+              By signing up, you agree to the{" "}
+              <span className="text-primary hover:underline cursor-pointer">Terms of Service</span>
+              {" "}and{" "}
+              <span className="text-primary hover:underline cursor-pointer">Privacy Policy</span>
+              , including{" "}
+              <span className="text-primary hover:underline cursor-pointer">Cookie Use</span>.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

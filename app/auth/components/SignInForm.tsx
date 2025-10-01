@@ -15,9 +15,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { signInSchema, type SignInFormData } from "../lib/validations";
-import { createClient } from "@/utils/supabase/client";
+import { signIn } from "../actions/auth";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface SignInFormProps {
   onSuccess: () => void;
@@ -27,6 +28,7 @@ interface SignInFormProps {
 export function SignInForm({ onSuccess, onSwitchToSignUp }: SignInFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const form = useForm<SignInFormData>({
     resolver: zodResolver(signInSchema),
@@ -40,42 +42,24 @@ export function SignInForm({ onSuccess, onSwitchToSignUp }: SignInFormProps) {
   const onSubmit = async (data: SignInFormData) => {
     setIsLoading(true);
     try {
-      const supabase = createClient();
+      // For now, we'll assume emailOrUsername is an email
+      // In a production app, you'd want to handle username lookup here
+      const result = await signIn(data.emailOrUsername, data.password);
       
-      // Determine if input is email or username
-      const isEmail = data.emailOrUsername.includes("@");
-      
-      let email = data.emailOrUsername;
-      
-      if (!isEmail) {
-        // Look up email by username
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("email")
-          .eq("username", data.emailOrUsername)
-          .single();
-
-        if (!profile) {
-          throw new Error("Invalid username or password");
-        }
-        
-        email = profile.email;
+      if (result.success) {
+        toast.success("Welcome back!");
+        router.push("/home");
+        onSuccess();
       }
-
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password: data.password,
-      });
-
-      if (error) {
-        throw new Error("Invalid email or password");
-      }
-
-      toast.success("Signed in successfully!");
-      onSuccess();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "An error occurred during sign in";
-      toast.error(errorMessage);
+      
+      // Check if it's an email not confirmed error
+      if (errorMessage.includes("email not confirmed") || errorMessage.includes("Email not confirmed")) {
+        toast.error("Please check your email and click the verification link before signing in.");
+      } else {
+        toast.error(errorMessage);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -136,34 +120,26 @@ export function SignInForm({ onSuccess, onSwitchToSignUp }: SignInFormProps) {
           )}
         />
 
-        <div className="flex items-center justify-between">
-          <FormField
-            control={form.control}
-            name="rememberMe"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-center space-x-2 space-y-0">
-                <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                    className="border-gray-600"
-                  />
-                </FormControl>
-                <FormLabel className="text-sm text-gray-300">
+        <FormField
+          control={form.control}
+          name="rememberMe"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-y-0">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                  className="border-gray-600"
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel className="text-xs text-gray-300">
                   Remember me
                 </FormLabel>
-              </FormItem>
-            )}
-          />
-          
-          <Button
-            type="button"
-            variant="link"
-            className="text-primary hover:text-primary/80 p-0 h-auto text-sm"
-          >
-            Forgot password?
-          </Button>
-        </div>
+              </div>
+            </FormItem>
+          )}
+        />
 
         <div className="flex-1"></div>
         
@@ -172,12 +148,12 @@ export function SignInForm({ onSuccess, onSwitchToSignUp }: SignInFormProps) {
           className="w-full bg-primary hover:bg-primary/90 text-black font-semibold h-10 sm:h-11"
           disabled={isLoading}
         >
-          {isLoading ? "Signing In..." : "Sign In"}
+          {isLoading ? "Signing in..." : "Sign in"}
         </Button>
         
         <div className="mt-4 text-center">
           <p className="text-sm text-gray-400">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <button
               type="button"
               onClick={onSwitchToSignUp}

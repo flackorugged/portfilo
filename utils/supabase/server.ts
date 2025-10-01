@@ -27,3 +27,33 @@ export async function createClient() {
     }
   )
 }
+
+// Helper function to get the current user in Server Components
+export async function getUser() {
+  const supabase = await createClient()
+  const { data: { user }, error } = await supabase.auth.getUser()
+  
+  if (error) {
+    console.error('Error getting user:', error)
+    return null
+  }
+  
+  return user
+}
+
+// Helper function to get user profile
+export async function getUserProfile(userId: string) {
+  const supabase = await createClient()
+  const { data: profile, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .single()
+  
+  if (error) {
+    console.error('Error getting user profile:', error)
+    return null
+  }
+  
+  return profile
+}

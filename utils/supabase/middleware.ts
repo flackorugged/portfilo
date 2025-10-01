@@ -37,17 +37,22 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith('/login') &&
-    !request.nextUrl.pathname.startsWith('/auth') &&
-    !request.nextUrl.pathname.startsWith('/error') &&
-    request.nextUrl.pathname !== '/'
-  ) {
-    // no user, potentially respond by redirecting the user to the login page
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    return NextResponse.redirect(url)
+  // Handle route protection
+  if (!user) {
+    // If user is not logged in and trying to access protected routes, redirect to home
+    if (request.nextUrl.pathname.startsWith('/home') || 
+        request.nextUrl.pathname.startsWith('/protected')) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/'
+      return NextResponse.redirect(url)
+    }
+  } else {
+    // If user is logged in and on the landing page, redirect to home
+    if (request.nextUrl.pathname === '/') {
+      const url = request.nextUrl.clone()
+      url.pathname = '/home'
+      return NextResponse.redirect(url)
+    }
   }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is.
