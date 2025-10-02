@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { signOut } from "@/app/auth/actions/auth";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 
 export default async function HomePage() {
   const user = await getUser();
@@ -18,15 +19,25 @@ export default async function HomePage() {
       <div className="max-w-2xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">Welcome to PortFilo</h1>
-          <form action={signOut}>
-            <Button 
-              type="submit"
-              variant="outline"
-              className="border-gray-600 text-white hover:bg-white/10"
-            >
-              Sign Out
-            </Button>
-          </form>
+          <div className="flex space-x-4">
+            <Link href="/profile">
+              <Button 
+                variant="outline"
+                className="border-gray-600 text-white hover:bg-white/10"
+              >
+                View Profile
+              </Button>
+            </Link>
+            <form action={signOut}>
+              <Button 
+                type="submit"
+                variant="outline"
+                className="border-gray-600 text-white hover:bg-white/10"
+              >
+                Sign Out
+              </Button>
+            </form>
+          </div>
         </div>
 
         <Card className="bg-off-black border-gray-700">
