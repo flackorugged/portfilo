@@ -29,7 +29,7 @@ export default async function HomePage() {
           </form>
         </div>
 
-        <Card className="bg-gray-900 border-gray-700">
+        <Card className="bg-off-black border-gray-700">
           <CardHeader>
             <CardTitle className="text-white">Your Profile</CardTitle>
           </CardHeader>

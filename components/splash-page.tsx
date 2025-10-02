@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 
 interface SplashPageProps {
@@ -10,17 +10,16 @@ interface SplashPageProps {
 export function SplashPage({ onComplete }: SplashPageProps) {
   const [isVisible, setIsVisible] = useState(true);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsVisible(false);
-      // Small delay to allow fade out animation
-      setTimeout(() => {
-        onComplete();
-      }, 300);
-    }, 1500);
-
-    return () => clearTimeout(timer);
+  const handleComplete = useCallback(() => {
+    setIsVisible(false);
+    // Small delay to allow fade out animation
+    setTimeout(onComplete, 300);
   }, [onComplete]);
+
+  useEffect(() => {
+    const timer = setTimeout(handleComplete, 1500);
+    return () => clearTimeout(timer);
+  }, [handleComplete]);
 
   return (
     <div

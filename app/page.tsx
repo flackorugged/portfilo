@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import Image from "next/image";
 import { SplashPage } from "@/components/splash-page";
 import { SignInForm } from "./auth/components/SignInForm";
@@ -11,11 +11,11 @@ export default function Home() {
   const [showSplash, setShowSplash] = useState(true);
   const [activeTab, setActiveTab] = useState<"signin" | "signup">("signin");
 
-  const handleSplashComplete = () => {
+  const handleSplashComplete = useCallback(() => {
     setShowSplash(false);
-  };
+  }, []);
 
-  const handleAuthSuccess = () => {
+  const handleAuthSuccess = useCallback(() => {
     // For signup, switch to sign-in tab
     // For signin, the middleware will handle the redirect to /home
     if (activeTab === "signup") {
@@ -23,7 +23,11 @@ export default function Home() {
     } else {
       window.location.href = "/home";
     }
-  };
+  }, [activeTab]);
+
+  const handleTabChange = useCallback((value: string) => {
+    setActiveTab(value as "signin" | "signup");
+  }, []);
 
   if (showSplash) {
     return <SplashPage onComplete={handleSplashComplete} />;
@@ -49,7 +53,7 @@ export default function Home() {
           {/* Headline - Mobile */}
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold mb-4">
-              For the Filos
+              Happening now
             </h1>
             <p className="text-lg font-bold text-white/80">
               See what&apos;s up.
@@ -58,17 +62,17 @@ export default function Home() {
 
           {/* Auth Forms - Mobile */}
           <div className="flex-1 flex flex-col justify-center">
-            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "signin" | "signup")} className="w-full max-w-sm mx-auto">
-              <TabsList className="grid w-full grid-cols-2 bg-gray-900 border-gray-700 mb-6">
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full max-w-sm mx-auto">
+              <TabsList className="grid w-full grid-cols-2 bg-off-black border-gray-700 mb-6">
                 <TabsTrigger 
                   value="signin" 
-                  className="data-[state=active]:bg-primary data-[state=active]:text-black text-gray-400 text-sm"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-black text-gray-400 dark:text-gray-400 dark:data-[state=active]:text-black text-sm"
                 >
                   Sign In
                 </TabsTrigger>
                 <TabsTrigger 
                   value="signup"
-                  className="data-[state=active]:bg-primary data-[state=active]:text-black text-gray-400 text-sm"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-black text-gray-400 dark:text-gray-400 dark:data-[state=active]:text-black text-sm"
                 >
                   Sign Up
                 </TabsTrigger>
@@ -93,7 +97,7 @@ export default function Home() {
             <p className="text-xs text-gray-400 mt-6 text-center px-4">
               By signing up, you agree to the{" "}
               <span className="text-primary hover:underline cursor-pointer">Terms of Service</span>
-              {" "}and{" "}
+{" "}and{" "}
               <span className="text-primary hover:underline cursor-pointer">Privacy Policy</span>
               , including{" "}
               <span className="text-primary hover:underline cursor-pointer">Cookie Use</span>.
@@ -130,17 +134,17 @@ export default function Home() {
             </div>
 
             {/* Auth Forms - Desktop */}
-            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "signin" | "signup")} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 bg-gray-900 border-gray-700">
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+              <TabsList className="grid w-full grid-cols-2 bg-off-black border-gray-700">
                 <TabsTrigger 
                   value="signin" 
-                  className="data-[state=active]:bg-primary data-[state=active]:text-black text-gray-400"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-black text-gray-400 dark:text-gray-400 dark:data-[state=active]:text-black"
                 >
                   Sign In
                 </TabsTrigger>
                 <TabsTrigger 
                   value="signup"
-                  className="data-[state=active]:bg-primary data-[state=active]:text-black text-gray-400"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-black text-gray-400 dark:text-gray-400 dark:data-[state=active]:text-black"
                 >
                   Sign Up
                 </TabsTrigger>
@@ -165,7 +169,7 @@ export default function Home() {
             <p className="text-xs text-gray-400 mt-6">
               By signing up, you agree to the{" "}
               <span className="text-primary hover:underline cursor-pointer">Terms of Service</span>
-              {" "}and{" "}
+{" "}and{" "}
               <span className="text-primary hover:underline cursor-pointer">Privacy Policy</span>
               , including{" "}
               <span className="text-primary hover:underline cursor-pointer">Cookie Use</span>.

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/form";
 import { signUpSchema, type SignUpFormData } from "../lib/validations";
 import { signUp } from "../actions/auth";
-import { toast } from "sonner";
+import { MessageContainer, type MessageData } from "@/components/ui/message";
 import { Eye, EyeOff } from "lucide-react";
 
 interface SignUpFormProps {
@@ -28,6 +28,17 @@ export function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState<MessageData | null>(null);
+
+  // Clear message after 5 seconds
+  useEffect(() => {
+    if (message) {
+      const timer = setTimeout(() => {
+        setMessage(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [message]);
 
   const form = useForm<SignUpFormData>({
     resolver: zodResolver(signUpSchema),
@@ -51,20 +62,23 @@ export function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormProps) {
       });
 
       if (result.success) {
-        toast.success("Account created! Please check your email to verify your account before signing in.");
+        setMessage({ type: "success", text: "Account created! Please check your email to verify your account before signing in." });
         // Stay on landing page and switch to sign in tab
-        onSuccess();
+        setTimeout(() => {
+          onSuccess();
+        }, 2000);
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "An error occurred during sign up";
-      toast.error(errorMessage);
+      setMessage({ type: "error", text: errorMessage });
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <Form {...form}>
+    <MessageContainer message={message}>
+      <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 h-full flex flex-col">
         <FormField
           control={form.control}
@@ -75,7 +89,7 @@ export function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormProps) {
               <FormControl>
                 <Input
                   placeholder="Filo"
-                  className="bg-gray-900 border-gray-700 text-white placeholder:text-gray-400 h-10 sm:h-11"
+                  className="bg-off-black border-gray-700 text-white placeholder:text-gray-400 h-10 sm:h-11"
                   {...field}
                 />
               </FormControl>
@@ -94,7 +108,7 @@ export function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormProps) {
                 <Input
                   type="email"
                   placeholder="example@email.com"
-                  className="bg-gray-900 border-gray-700 text-white placeholder:text-gray-400 h-10 sm:h-11"
+                  className="bg-off-black border-gray-700 text-white placeholder:text-gray-400 h-10 sm:h-11"
                   {...field}
                 />
               </FormControl>
@@ -112,7 +126,7 @@ export function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormProps) {
               <FormControl>
                 <Input
                   placeholder="username"
-                  className="bg-gray-900 border-gray-700 text-white placeholder:text-gray-400 h-10 sm:h-11"
+                  className="bg-off-black border-gray-700 text-white placeholder:text-gray-400 h-10 sm:h-11"
                   {...field}
                 />
               </FormControl>
@@ -132,7 +146,7 @@ export function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormProps) {
                   <Input
                     type={showPassword ? "text" : "password"}
                     placeholder="Create a password"
-                    className="bg-gray-900 border-gray-700 text-white placeholder:text-gray-400 pr-10 h-10 sm:h-11"
+                    className="bg-off-black border-gray-700 text-white placeholder:text-gray-400 pr-10 h-10 sm:h-11"
                     {...field}
                   />
                   <Button
@@ -166,7 +180,7 @@ export function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormProps) {
                   <Input
                     type={showConfirmPassword ? "text" : "password"}
                     placeholder="Confirm your password"
-                    className="bg-gray-900 border-gray-700 text-white placeholder:text-gray-400 pr-10 h-10 sm:h-11"
+                    className="bg-off-black border-gray-700 text-white placeholder:text-gray-400 pr-10 h-10 sm:h-11"
                     {...field}
                   />
                   <Button
@@ -206,8 +220,8 @@ export function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormProps) {
                   I agree to the{" "}
                   <a href="#" className="text-primary hover:underline">
                     Terms of Service
-                  </a>{" "}
-                  and{" "}
+                  </a>
+ and 
                   <a href="#" className="text-primary hover:underline">
                     Privacy Policy
                   </a>
@@ -242,5 +256,6 @@ export function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormProps) {
         </div>
       </form>
     </Form>
+    </MessageContainer>
   );
 }

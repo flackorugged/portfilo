@@ -44,9 +44,9 @@ export async function GET(request: NextRequest) {
               })
               .eq("id", data.user.id)
           }
-        } catch (profileError) {
-          console.error('Profile creation/update error:', profileError)
+        } catch {
           // Don't fail the auth flow if profile creation fails
+          // Error is silently handled to maintain auth flow
         }
       }
       

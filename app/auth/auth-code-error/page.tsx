@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 export default function AuthCodeError() {
   return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center p-4">
-      <Card className="bg-gray-900 border-gray-700 max-w-md w-full">
+      <Card className="bg-off-black border-gray-700 max-w-md w-full">
         <CardHeader>
           <CardTitle className="text-white text-center">Email Verification Error</CardTitle>
         </CardHeader>

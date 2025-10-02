@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/form";
 import { signInSchema, type SignInFormData } from "../lib/validations";
 import { signIn } from "../actions/auth";
-import { toast } from "sonner";
+import { MessageContainer, type MessageData } from "@/components/ui/message";
 import { Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -28,7 +28,18 @@ interface SignInFormProps {
 export function SignInForm({ onSuccess, onSwitchToSignUp }: SignInFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState<MessageData | null>(null);
   const router = useRouter();
+
+  // Clear message after 5 seconds
+  useEffect(() => {
+    if (message) {
+      const timer = setTimeout(() => {
+        setMessage(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [message]);
 
   const form = useForm<SignInFormData>({
     resolver: zodResolver(signInSchema),
@@ -47,7 +58,6 @@ export function SignInForm({ onSuccess, onSwitchToSignUp }: SignInFormProps) {
       const result = await signIn(data.emailOrUsername, data.password);
       
       if (result.success) {
-        toast.success("Welcome back!");
         router.push("/home");
         onSuccess();
       }
@@ -56,9 +66,9 @@ export function SignInForm({ onSuccess, onSwitchToSignUp }: SignInFormProps) {
       
       // Check if it's an email not confirmed error
       if (errorMessage.includes("email not confirmed") || errorMessage.includes("Email not confirmed")) {
-        toast.error("Please check your email and click the verification link before signing in.");
+        setMessage({ type: "error", text: "Please check your email and click the verification link before signing in." });
       } else {
-        toast.error(errorMessage);
+        setMessage({ type: "error", text: errorMessage });
       }
     } finally {
       setIsLoading(false);
@@ -66,7 +76,8 @@ export function SignInForm({ onSuccess, onSwitchToSignUp }: SignInFormProps) {
   };
 
   return (
-    <Form {...form}>
+    <MessageContainer message={message}>
+      <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 h-full flex flex-col">
         <FormField
           control={form.control}
@@ -77,7 +88,7 @@ export function SignInForm({ onSuccess, onSwitchToSignUp }: SignInFormProps) {
               <FormControl>
                 <Input
                   placeholder="Enter your email or username"
-                  className="bg-gray-900 border-gray-700 text-white placeholder:text-gray-400 h-10 sm:h-11"
+                  className="bg-off-black border-gray-700 text-white placeholder:text-gray-400 h-10 sm:h-11"
                   {...field}
                 />
               </FormControl>
@@ -97,7 +108,7 @@ export function SignInForm({ onSuccess, onSwitchToSignUp }: SignInFormProps) {
                   <Input
                     type={showPassword ? "text" : "password"}
                     placeholder="Enter your password"
-                    className="bg-gray-900 border-gray-700 text-white placeholder:text-gray-400 pr-10 h-10 sm:h-11"
+                    className="bg-off-black border-gray-700 text-white placeholder:text-gray-400 pr-10 h-10 sm:h-11"
                     {...field}
                   />
                   <Button
@@ -165,5 +176,6 @@ export function SignInForm({ onSuccess, onSwitchToSignUp }: SignInFormProps) {
         </div>
       </form>
     </Form>
+    </MessageContainer>
   );
 }

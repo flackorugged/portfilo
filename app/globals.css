@@ -5,6 +5,7 @@
   --foreground: #fafafa;
   --primary: #1FB8CD;
   --primary-hover: #1AA5B8;
+  --off-black: #13343B;
 }
 
 @theme inline {
@@ -12,6 +13,7 @@
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
+  --color-off-black: var(--off-black);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
