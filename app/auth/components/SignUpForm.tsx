@@ -38,6 +38,7 @@ export function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormProps) {
       }, 5000);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [message]);
 
   const form = useForm<SignUpFormData>({

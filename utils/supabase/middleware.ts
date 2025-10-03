@@ -8,7 +8,7 @@ export async function updateSession(request: NextRequest) {
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         getAll() {
@@ -41,6 +41,11 @@ export async function updateSession(request: NextRequest) {
   if (!user) {
     // If user is not logged in and trying to access protected routes, redirect to home
     if (request.nextUrl.pathname.startsWith('/home') || 
+        request.nextUrl.pathname.startsWith('/profile') ||
+        request.nextUrl.pathname.startsWith('/search') ||
+        request.nextUrl.pathname.startsWith('/notifications') ||
+        request.nextUrl.pathname.startsWith('/messages') ||
+        request.nextUrl.pathname.startsWith('/more') ||
         request.nextUrl.pathname.startsWith('/protected')) {
       const url = request.nextUrl.clone()
       url.pathname = '/'

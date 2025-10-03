@@ -34,10 +34,10 @@ const topPortfolios = [
   },
 ];
 
-export function WhoToFollowSidebar() {
+export function RightSidebar() {
   return (
-    <div className="h-screen sticky top-0 flex flex-col p-4">
-      <div className="space-y-4 pt-4">
+    <div className="sticky top-0 h-fit">
+      <div className="p-4 space-y-4 pt-4">
         {/* Search Bar */}
         <div className="rounded-full px-4 py-3 border border-gray-700 bg-gray-900/20 hover:bg-gray-900/40 transition-colors">
           <input
@@ -103,6 +103,50 @@ export function WhoToFollowSidebar() {
                   className="w-full bg-primary hover:bg-primary/90 text-black font-medium"
                 >
                   View Portfolio
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Who to Follow */}
+        <div className="border border-gray-700 rounded-lg bg-transparent">
+          <div className="p-4 border-b border-gray-700">
+            <h3 className="text-white text-xl font-bold">Who to follow</h3>
+          </div>
+          <div className="p-4 space-y-4">
+            {topPortfolios.map((portfolio) => (
+              <div key={portfolio.id} className="flex items-center justify-between hover:bg-gray-900/20 rounded-lg p-2 transition-colors">
+                <div className="flex items-center space-x-3 flex-1 min-w-0">
+                  <div className="flex-shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center">
+                      {portfolio.avatar ? (
+                        <Image
+                          src={portfolio.avatar}
+                          alt={portfolio.name}
+                          width={40}
+                          height={40}
+                          className="w-10 h-10 rounded-full"
+                        />
+                      ) : (
+                        <User className="h-5 w-5 text-gray-300" />
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white font-medium truncate">
+                      {portfolio.name}
+                    </p>
+                    <p className="text-gray-400 text-sm truncate">
+                      @{portfolio.username}
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  className="bg-primary hover:bg-primary/90 text-black font-medium px-4 py-1.5"
+                >
+                  Follow
                 </Button>
               </div>
             ))}

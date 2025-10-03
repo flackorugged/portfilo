@@ -1,3 +1,4 @@
+import { type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { CheckCircle, XCircle, AlertCircle } from "lucide-react";
 
@@ -49,7 +50,7 @@ export interface MessageData {
 }
 
 interface MessageContainerProps {
-  children: React.ReactNode;
+  children: ReactNode;
   message?: MessageData | null;
 }
 

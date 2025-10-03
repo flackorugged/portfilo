@@ -50,6 +50,7 @@ export async function signUp(email: string, password: string, userData: {
     throw new Error("Username is already taken");
   }
   
+  // The trigger will create the profile automatically
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -63,72 +64,12 @@ export async function signUp(email: string, password: string, userData: {
   });
   
   if (error) {
-    throw new Error(error.message);
+    console.error('SignUp error:', error);
+    throw new Error(`Signup failed: ${error.message}`);
   }
   
   revalidatePath("/");
   return { success: true, user: data.user };
 }
 
-export async function updateUserProfile(userId: string, profileData: {
-  name: string;
-  username: string;
-}) {
-  const supabase = await createClient();
-  
-  const { error } = await supabase
-    .from("profiles")
-    .update({
-      name: profileData.name,
-      username: profileData.username,
-    })
-    .eq("id", userId);
-
-  if (error) {
-    throw new Error(`Profile update failed: ${error.message}`);
-  }
-}
-
-export async function ensureUserProfile(userId: string, profileData: {
-  name: string;
-  username: string;
-}) {
-  const supabase = await createClient();
-  
-  // First check if profile exists
-  const { data: existingProfile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", userId)
-    .single();
-
-  if (existingProfile) {
-    // Profile exists, update it if needed
-    if (existingProfile.username !== profileData.username || existingProfile.name !== profileData.name) {
-      const { error } = await supabase
-        .from("profiles")
-        .update({
-          name: profileData.name,
-          username: profileData.username,
-        })
-        .eq("id", userId);
-
-      if (error) {
-        throw new Error(`Profile update failed: ${error.message}`);
-      }
-    }
-  } else {
-    // Profile doesn't exist, create it
-    const { error } = await supabase
-      .from("profiles")
-      .insert({
-        id: userId,
-        name: profileData.name,
-        username: profileData.username,
-      });
-
-    if (error) {
-      throw new Error(`Profile creation failed: ${error.message}`);
-    }
-  }
-}
+// REMOVED: updateUserProfile and ensureUserProfile - use updateProfile from profile actions instead
