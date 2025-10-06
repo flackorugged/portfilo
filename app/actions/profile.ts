@@ -10,7 +10,12 @@ export async function getCurrentUserProfile(): Promise<{ success: boolean; profi
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
-    if (authError || !user) {
+    if (authError) {
+      console.error('Auth error in getCurrentUserProfile:', authError);
+      return { success: false, error: 'Authentication error: ' + authError.message };
+    }
+    
+    if (!user) {
       return { success: false, error: 'Not authenticated' };
     }
 
@@ -46,10 +51,10 @@ export async function getCurrentUserProfile(): Promise<{ success: boolean; profi
     return {
       success: true,
       profile: {
-        ...profile,
+        ...(profile as Profile),
         followers: followersResult.count || 0,
         following: followingResult.count || 0
-      }
+      } as Profile & { followers: number; following: number }
     };
   } catch (error) {
     console.error('Get current user profile error:', error);
@@ -74,16 +79,16 @@ export async function updateProfile(data: { name: string; bio?: string }) {
     }
 
     // Update profile
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .update({
+    // Type assertion needed due to Supabase's generic type inference limitations
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: profile, error } = await ((supabase.from('profiles') as any).update({
         name: validatedData.name,
         bio: validatedData.bio || null,
         updated_at: new Date().toISOString(),
       })
       .eq('id', user.id)
       .select()
-      .single();
+      .single());
 
     if (error) {
       throw new Error('Failed to update profile');
@@ -107,7 +112,19 @@ export async function uploadProfilePicture(formData: FormData): Promise<{ succes
     const file = formData.get('file') as File;
     
     if (!file) {
-      throw new Error('No file provided');
+      return { success: false, error: 'No file provided' };
+    }
+
+    // Validate file size (2MB max)
+    const MAX_SIZE = 2 * 1024 * 1024; // 2MB
+    if (file.size > MAX_SIZE) {
+      return { success: false, error: 'Profile picture must be less than 2MB' };
+    }
+
+    // Validate file type
+    const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      return { success: false, error: 'Profile picture must be JPEG, PNG, or WebP format' };
     }
 
     // Get authenticated user
@@ -115,7 +132,7 @@ export async function uploadProfilePicture(formData: FormData): Promise<{ succes
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
     if (authError || !user) {
-      throw new Error('Unauthorized');
+      return { success: false, error: 'Unauthorized' };
     }
 
     // Generate unique filename
@@ -124,11 +141,11 @@ export async function uploadProfilePicture(formData: FormData): Promise<{ succes
     const filePath = `${user.id}/${fileName}`;
 
     // Delete old profile picture if exists
-    const { data: currentProfile } = await supabase
+    const { data: currentProfile } = (await supabase
       .from('profiles')
       .select('avatar_url')
       .eq('id', user.id)
-      .single();
+      .single()) as { data: { avatar_url: string | null } | null };
 
     if (currentProfile?.avatar_url) {
       const oldPath = currentProfile.avatar_url.split('/').slice(-2).join('/');
@@ -153,13 +170,12 @@ export async function uploadProfilePicture(formData: FormData): Promise<{ succes
       .getPublicUrl(filePath);
 
     // Update profile with new URL
-    const { error: updateError } = await supabase
-      .from('profiles')
-      .update({ 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error: updateError } = await ((supabase.from('profiles') as any).update({
         avatar_url: publicUrl,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', user.id);
+      .eq('id', user.id));
 
     if (updateError) {
       throw new Error('Failed to update profile');
@@ -183,7 +199,19 @@ export async function uploadHeaderImage(formData: FormData): Promise<{ success: 
     const file = formData.get('file') as File;
     
     if (!file) {
-      throw new Error('No file provided');
+      return { success: false, error: 'No file provided' };
+    }
+
+    // Validate file size (5MB max)
+    const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+    if (file.size > MAX_SIZE) {
+      return { success: false, error: 'Header image must be less than 5MB' };
+    }
+
+    // Validate file type
+    const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      return { success: false, error: 'Header image must be JPEG, PNG, or WebP format' };
     }
 
     // Get authenticated user
@@ -191,7 +219,7 @@ export async function uploadHeaderImage(formData: FormData): Promise<{ success: 
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
     if (authError || !user) {
-      throw new Error('Unauthorized');
+      return { success: false, error: 'Unauthorized' };
     }
 
     // Generate unique filename
@@ -200,11 +228,11 @@ export async function uploadHeaderImage(formData: FormData): Promise<{ success: 
     const filePath = `${user.id}/${fileName}`;
 
     // Delete old header image if exists
-    const { data: currentProfile } = await supabase
+    const { data: currentProfile } = (await supabase
       .from('profiles')
       .select('header_url')
       .eq('id', user.id)
-      .single();
+      .single()) as { data: { header_url: string | null } | null };
 
     if (currentProfile?.header_url) {
       const oldPath = currentProfile.header_url.split('/').slice(-2).join('/');
@@ -229,13 +257,12 @@ export async function uploadHeaderImage(formData: FormData): Promise<{ success: 
       .getPublicUrl(filePath);
 
     // Update profile with new URL
-    const { error: updateError } = await supabase
-      .from('profiles')
-      .update({ 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error: updateError } = await ((supabase.from('profiles') as any).update({
         header_url: publicUrl,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', user.id);
+      .eq('id', user.id));
 
     if (updateError) {
       throw new Error('Failed to update profile');

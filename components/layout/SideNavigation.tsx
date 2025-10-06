@@ -82,14 +82,14 @@ export function SideNavigation({ user, profile }: SideNavigationProps) {
               );
             })}
             
-            {/* Post Button */}
+            {/* Create Button */}
             <div className="pt-6 px-4">
               <Button 
                 className="w-full bg-primary hover:bg-primary/90 text-black font-bold text-lg py-3 rounded-full"
-                aria-label="Create new post"
+                aria-label="Create new content"
               >
-                <span className="hidden xl:block">Post</span>
-                <span className="xl:hidden">Post</span>
+                <span className="hidden xl:block">Create</span>
+                <span className="xl:hidden">Create</span>
               </Button>
             </div>
 

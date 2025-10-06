@@ -3,6 +3,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { env } from "@/lib/env";
 
 export async function signOut() {
   const supabase = await createClient();
@@ -55,7 +56,7 @@ export async function signUp(email: string, password: string, userData: {
     email,
     password,
     options: {
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/callback`,
+      emailRedirectTo: `${env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
       data: {
         username: userData.username,
         name: userData.name,
